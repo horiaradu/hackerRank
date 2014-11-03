@@ -1,6 +1,7 @@
 package hacker
 
 import scala.io.StdIn.readLong
+import scala.io.StdIn.readInt
 import scala.io.StdIn.readLine
 
 object Solution {
@@ -15,28 +16,25 @@ object Solution {
     case (result, element) => result + element
   }
 
-  def iterate(values: Array[Long], pMean: Long, sumOfElement: Long) = {
-    val length = values.length
-    val resultPMean = pMean - values(length - 1) * length + sumOfElement
-    val newValues = Array.concat(Array(values(length - 1)), values.slice(0, length - 1))
-    (newValues, resultPMean)
-  }
+  def maxPMean(length: Int, values: Array[Long]) = {
+    def iterate(lastIndex: Int, pMean: Long, sumOfElement: Long) = {
+      val resultPMean = pMean - values(lastIndex) * length + sumOfElement
+      (lastIndex - 1, resultPMean)
+    }
 
-  def maxPMean(values: Array[Long]) = {
-    def _maxPMean(currentValues: Array[Long], currentPMean: Long, maxPMean: Long, sum: Long, iterationCount: Long): Long =
-      if (iterationCount == currentValues.length) maxPMean
-      else iterate(currentValues, currentPMean, sum) match {
-        case (nextValues, nextPMean) =>
-          if (nextPMean > maxPMean) _maxPMean(nextValues, nextPMean, nextPMean, sum, iterationCount + 1)
-          else _maxPMean(nextValues, nextPMean, maxPMean, sum, iterationCount + 1)
+    def _maxPMean(lastIndex: Int, currentPMean: Long, max: Long, sum: Long): Long =
+      if (lastIndex == -1) max
+      else iterate(lastIndex, currentPMean, sum) match {
+        case (nextLastIndex, nextPMean) =>
+          if (nextPMean > max) _maxPMean(nextLastIndex, nextPMean, nextPMean, sum)
+          else _maxPMean(nextLastIndex, nextPMean, max, sum)
       }
 
     val pMean = pmean(values)
-    _maxPMean(values, pMean, pMean, sumOfElements(values), 0)
+    _maxPMean(length - 1, pMean, pMean, sumOfElements(values))
   }
 
   def main(args: Array[String]) {
-    readLong
-    println(maxPMean(getLongs(readLine)))
+    println(maxPMean(readInt, getLongs(readLine)))
   }
 }

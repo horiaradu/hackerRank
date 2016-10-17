@@ -1,3 +1,5 @@
+package sherlockAndCost
+
 import scala.math.abs
 
 object SherlockAndCost {

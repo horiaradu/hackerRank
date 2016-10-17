@@ -1,5 +1,6 @@
 package exploringStrings
 
+import scala.collection.mutable
 import scala.io.StdIn._
 
 /**
@@ -8,27 +9,30 @@ import scala.io.StdIn._
 class Key(val currentWordLength: Long, val availableLettersLessThanCurrent: Long, val availableLettersGreaterThanCurrent: Long, val currentSequenceLength: Long)
 
 class StringSequenceCounter(val alphabetSize: Long, val sequenceLengths: Seq[Long]) {
-  var results = Map[Key, Long]()
+  var results = mutable.HashMap[Key, Long]()
 
   def p(wordLength: Long, sequenceLength: Long): Long = {
-    def takeLessThanCurrent(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Seq[Long] =
-      (1L to availableLettersLessThanCurrent)
-        .map(choice => {
-          val nextWordLength = currentWordLength + 1
-          val nextAvailableLess = choice - 1
-          val nextAvailableGreater = availableLettersLessThanCurrent - choice + availableLettersGreaterThanCurrent
-          numberOfSequences(nextWordLength, nextAvailableLess, nextAvailableGreater, currentSequenceLength)
-        })
+    def takeLessThanCurrent(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Long = {
+      var total = 0L
+      for (choice <- 1L to availableLettersLessThanCurrent) {
+        val nextWordLength = currentWordLength + 1
+        val nextAvailableLess = choice - 1
+        val nextAvailableGreater = availableLettersLessThanCurrent - choice + availableLettersGreaterThanCurrent
+        total += numberOfSequences(nextWordLength, nextAvailableLess, nextAvailableGreater, currentSequenceLength)
+      }
+      total
+    }
 
-
-    def takeGreaterThanCurrent(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Seq[Long] =
-      ((1L + availableLettersLessThanCurrent) to (availableLettersLessThanCurrent + availableLettersGreaterThanCurrent))
-        .map(choice => {
-          val nextWordLength = currentWordLength + 1
-          val nextAvailableLess = choice - 1
-          val nextAvailableGreater = availableLettersGreaterThanCurrent + availableLettersLessThanCurrent - choice
-          numberOfSequences(nextWordLength, nextAvailableLess, nextAvailableGreater, currentSequenceLength + 1)
-        })
+    def takeGreaterThanCurrent(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Long = {
+      var total = 0L
+      for (choice <- (1L + availableLettersLessThanCurrent) to (availableLettersLessThanCurrent + availableLettersGreaterThanCurrent)) {
+        val nextWordLength = currentWordLength + 1
+        val nextAvailableLess = choice - 1
+        val nextAvailableGreater = availableLettersGreaterThanCurrent + availableLettersLessThanCurrent - choice
+        total += numberOfSequences(nextWordLength, nextAvailableLess, nextAvailableGreater, currentSequenceLength + 1)
+      }
+      total
+    }
 
 
     def computeNumberOfSequences(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Long = {
@@ -37,8 +41,8 @@ class StringSequenceCounter(val alphabetSize: Long, val sequenceLengths: Seq[Lon
         if (currentSequenceLength == sequenceLength) 1
         else 0
       } else {
-        val leftCount = takeLessThanCurrent(currentWordLength, availableLettersLessThanCurrent, availableLettersGreaterThanCurrent, currentSequenceLength).sum
-        val rightCount = takeGreaterThanCurrent(currentWordLength, availableLettersLessThanCurrent, availableLettersGreaterThanCurrent, currentSequenceLength).sum
+        val leftCount = takeLessThanCurrent(currentWordLength, availableLettersLessThanCurrent, availableLettersGreaterThanCurrent, currentSequenceLength)
+        val rightCount = takeGreaterThanCurrent(currentWordLength, availableLettersLessThanCurrent, availableLettersGreaterThanCurrent, currentSequenceLength)
         leftCount + rightCount
       }
     }

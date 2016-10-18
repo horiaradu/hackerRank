@@ -37,6 +37,10 @@ class StringSequenceCounterSuite extends FunSuite {
     assert(twoLetterAlphabetCounter.p(2, 3) === 0)
   }
 
+  test("twoLetterAlphabetCounter") {
+    assert(new StringSequenceCounter(2, Seq(0, 1, 2)).solve() === 3)
+  }
+
   test("threeLetterAlphabetCounter.p(1, 0) should be 3") {
     assert(threeLetterAlphabetCounter.p(1, 0) === 3)
   }
@@ -77,6 +81,10 @@ class StringSequenceCounterSuite extends FunSuite {
     assert(threeLetterAlphabetCounter.p(3, 3) === 0)
   }
 
+  test("threeLetterAlphabetCounter") {
+    assert(new StringSequenceCounter(3, Seq(0, 1, 2, 3)).solve() === 8)
+  }
+
   test("fourLetterAlphabetCounter.p(4, 3) should be 1") {
     assert(fourLetterAlphabetCounter.p(4, 3) === 1)
   }
@@ -93,4 +101,11 @@ class StringSequenceCounterSuite extends FunSuite {
     assert(fourLetterAlphabetCounter.p(4, 0) === 1)
   }
 
+  test("fourLetterAlphabetCounter") {
+    assert(new StringSequenceCounter(4, Seq(0, 1, 2, 3, 4)).solve() === 34)
+  }
+
+  test("26LetterAlphabetCounter") {
+    assert(new StringSequenceCounter(26, 0L to 26L).solve() === BigDecimal("458021678418266656880288754"))
+  }
 }

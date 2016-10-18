@@ -6,14 +6,35 @@ import scala.io.StdIn._
 /**
   * Created by horiaradu on 16/10/2016.
   */
-class Key(val currentWordLength: Long, val availableLettersLessThanCurrent: Long, val availableLettersGreaterThanCurrent: Long, val currentSequenceLength: Long)
+class Key(val currentWordLength: Long, val availableLettersLessThanCurrent: Long,
+          val availableLettersGreaterThanCurrent: Long, val currentSequenceLength: Long,
+          val wordLength: Long, val sequenceLength: Long) {
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Key]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Key =>
+      (that canEqual this) &&
+        currentWordLength == that.currentWordLength &&
+        availableLettersLessThanCurrent == that.availableLettersLessThanCurrent &&
+        availableLettersGreaterThanCurrent == that.availableLettersGreaterThanCurrent &&
+        currentSequenceLength == that.currentSequenceLength &&
+        sequenceLength == that.sequenceLength
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(currentWordLength, availableLettersLessThanCurrent, availableLettersGreaterThanCurrent, currentSequenceLength, wordLength, sequenceLength)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
 
 class StringSequenceCounter(val alphabetSize: Long, val sequenceLengths: Seq[Long]) {
-  var results = mutable.HashMap[Key, Long]()
+  var results = mutable.HashMap[Key, BigDecimal]()
 
-  def p(wordLength: Long, sequenceLength: Long): Long = {
-    def takeLessThanCurrent(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Long = {
-      var total = 0L
+  def p(wordLength: Long, sequenceLength: Long): BigDecimal = {
+    def takeLessThanCurrent(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): BigDecimal = {
+      var total = BigDecimal(0)
       for (choice <- 1L to availableLettersLessThanCurrent) {
         val nextWordLength = currentWordLength + 1
         val nextAvailableLess = choice - 1
@@ -23,8 +44,8 @@ class StringSequenceCounter(val alphabetSize: Long, val sequenceLengths: Seq[Lon
       total
     }
 
-    def takeGreaterThanCurrent(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Long = {
-      var total = 0L
+    def takeGreaterThanCurrent(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): BigDecimal = {
+      var total = BigDecimal(0)
       for (choice <- (1L + availableLettersLessThanCurrent) to (availableLettersLessThanCurrent + availableLettersGreaterThanCurrent)) {
         val nextWordLength = currentWordLength + 1
         val nextAvailableLess = choice - 1
@@ -35,7 +56,7 @@ class StringSequenceCounter(val alphabetSize: Long, val sequenceLengths: Seq[Lon
     }
 
 
-    def computeNumberOfSequences(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Long = {
+    def computeNumberOfSequences(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): BigDecimal = {
       if (wordLength - currentWordLength < sequenceLength - currentSequenceLength) 0
       else if (currentWordLength == wordLength) {
         if (currentSequenceLength == sequenceLength) 1
@@ -47,8 +68,8 @@ class StringSequenceCounter(val alphabetSize: Long, val sequenceLengths: Seq[Lon
       }
     }
 
-    def numberOfSequences(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): Long = {
-      val key = new Key(currentWordLength, availableLettersLessThanCurrent, availableLettersGreaterThanCurrent, currentSequenceLength)
+    def numberOfSequences(currentWordLength: Long, availableLettersLessThanCurrent: Long, availableLettersGreaterThanCurrent: Long, currentSequenceLength: Long): BigDecimal = {
+      val key = new Key(currentWordLength, availableLettersLessThanCurrent, availableLettersGreaterThanCurrent, currentSequenceLength, wordLength, sequenceLength)
       if (!results.contains(key)) {
         results += key -> computeNumberOfSequences(currentWordLength, availableLettersLessThanCurrent, availableLettersGreaterThanCurrent, currentSequenceLength)
       }
@@ -64,13 +85,22 @@ class StringSequenceCounter(val alphabetSize: Long, val sequenceLengths: Seq[Lon
     }
   }
 
-  def maxP(sequenceLength: Long) = {
-    val ps = for (wordLength <- 1L to alphabetSize) yield p(wordLength, sequenceLength)
-    ps.max
+  def maxP(sequenceLength: Long): BigDecimal = {
+    if (sequenceLength >= alphabetSize) 0L
+    else {
+      var pMax = BigDecimal(0)
+      val minN = math.floor(50 * alphabetSize / 100.0).toLong
+      val maxN = math.ceil(100 * alphabetSize / 100.0).toLong
+      for (wordLength <- minN to maxN) {
+        val currentP = p(wordLength, sequenceLength)
+        if (currentP > pMax) pMax = currentP
+      }
+      pMax
+    }
   }
 
-  def solve(): Long = {
-    var sum = 0L
+  def solve(): BigDecimal = {
+    var sum = BigDecimal(0)
     for (sequenceLength <- sequenceLengths) {
       val max = maxP(sequenceLength)
       sum += max

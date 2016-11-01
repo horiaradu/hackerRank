@@ -26,4 +26,12 @@ class CandiesSuite extends FunSuite {
 //    2, 4, 2, 6, 1, 7, 8, 9, 2, 1
 //    1, 2, 1, 2, 1, 2, 3, 4, 2, 1
   }
+
+  test("(1, 2, 3, 2, 4, 5, 6, 7, 6, 5, 4, 3, 3, 3, 1, 2) should require 37 candies") {
+    assert(Solution.candies(List(1, 2, 3, 2, 4, 5, 6, 7, 6, 5, 4, 3, 3, 3, 1, 2)) === 37)
+  }
+
+  test("(4 3 3 3 1) should require 3 candies") {
+    assert(Solution.candies(List(4, 3, 3, 3, 1)) === 7)
+  }
 }
